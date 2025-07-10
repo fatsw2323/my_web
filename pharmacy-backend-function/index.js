@@ -14,6 +14,26 @@ functions.http('getPharmacyData', async (req, res) => {
     const Q1 = req.query.Q1; // 시/군/구 (예: 강남구)
     const DG = req.query.DG; // 요일 (예: 월, 화, 수, 목, 금, 토, 일, 공휴일)
 
+// --- 여기에 요일(DG) 변환 로직 추가 ---
+    const dayMap = {
+      '월': '1',
+      '화': '2',
+      '수': '3',
+      '목': '4',
+      '금': '5',
+      '토': '6',
+      '일': '7',
+      '공휴일': '8' // 공공데이터포털 문서에 따라 다를 수 있음. 확인 필요.
+    };
+    if (dayMap[DG]) {
+      DG = dayMap[DG];
+    } else {
+      // 유효하지 않은 요일 값이 들어왔을 경우 처리 (선택 사항)
+      console.error('Invalid day parameter:', req.query.DG);
+      res.status(400).json({ message: '유효하지 않은 요일 값입니다.' });
+      return;
+    }
+
     // 환경 변수에서 API 키 가져오기
     const serviceKey = process.env.PHARMACY_API_KEY;
 
