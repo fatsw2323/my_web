@@ -1,9 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>전국 약국 정보 조회 (GCP Cloud Functions)</title>
+    <style>
+        /* 기본 스타일 */
+        body { 
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; 
+            margin: 20px; 
+            background-color: #f4f7f6; 
+            color: #333; 
+            line-height: 1.6;
+        }
+        h1 { 
+            color: #2c3e50; 
+            text-align: center; 
+            margin-bottom: 30px; 
+            font-size: 2.5rem;
+        }
+
+        /* 검색 컨트롤 섹션 */
+        .controls { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            padding: 25px; 
+            background-color: #fff; 
+            border-radius: 10px; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); 
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+            gap: 15px; /* 요소 간 간격 */
+        }
+        .controls label { 
+            margin-right: 8px; 
+            font-weight: bold; 
+            color: #4a6572;
+            white-space: nowrap; /* 줄바꿈 방지 */
+        }
+        .controls input, 
+        .controls select, 
+        .controls button {
+            padding: 12px 18px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1.05rem;
+            box-sizing: border-box; /* 패딩이 너비에 포함되도록 */
+        }
+        .controls button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.1s ease;
+            font-weight: bold;
+            flex-shrink: 0; /* 버튼이 줄어들지 않도록 */
+        }
+        .controls button:hover {
+            background-color: #45a049;
+            transform: translateY(-2px);
+        }
+        .controls button:active {
+            transform: translateY(0);
+        }
+
+        /* 약국 목록 섹션 */
+        #pharmacyList {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); /* 반응형 그리드 */
+            gap: 25px; /* 그리드 항목 간 간격 */
+        }
+        .pharmacy-item {
+            background-color: #fff;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            display: flex;
+            flex-direction: column;
+        }
+        .pharmacy-item:hover {
+            transform: translateY(-7px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+        }
+        .pharmacy-item h3 {
+            color: #2c3e50;
+            margin-top: 0;
+            margin-bottom: 12px;
+            font-size: 1.5rem;
+            border-bottom: 2px solid #f0f0f0;
+            padding-bottom: 10px;
+        }
+        .pharmacy-item p {
+            margin: 8px 0;
+            font-size: 1rem;
+            color: #555;
+        }
+        .pharmacy-item strong {
+            color: #333;
+        }
+        .pharmacy-item a {
+            color: #007bff;
+            text-decoration: none;
+            margin-top: 10px;
+            align-self: flex-start; /* 링크가 왼쪽 정렬되도록 */
+        }
+        .pharmacy-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* 메시지 스타일 */
+        .empty-message, .error-message {
+            text-align: center;
+            margin-top: 50px;
+            color: #777;
+            font-size: 1.2rem;
+            grid-column: 1 / -1; /* 그리드 전체 너비 차지 */
+        }
+        .error-message {
+            color: #d9534f;
+            font-weight: bold;
+        }
+
+        /* 반응형 디자인 */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .controls label, .controls input, .controls select, .controls button {
+                width: 100%;
+                margin-right: 0;
+            }
+            #pharmacyList {
+                grid-template-columns: 1fr; /* 모바일에서는 1열로 */
+            }
+        }
+    </style>
+</head>
 <body>
-hihihi
-hidfsdfsdfsdfsdfsf
+    <h1>전국 약국 정보 조회</h1>
 
+    <div class="controls">
+        <label for="sido">시/도:</label>
+        <input type="text" id="sido" value="서울특별시" placeholder="예: 서울특별시">
+        <label for="sigungu">시/군/구:</label>
+        <input type="text" id="sigungu" value="강남구" placeholder="예: 강남구">
+        <label for="day">요일:</label>
+        <select id="day">
+            <option value="월">월</option>
+            <option value="화">화</option>
+            <option value="수">수</option>
+            <option value="목">목</option>
+            <option value="금">금</option>
+            <option value="토">토</option>
+            <option value="일">일</option>
+            <option value="공휴일">공휴일</option>
+        </select>
+        <button onclick="getPharmacies()">약국 정보 조회</button>
+    </div>
 
+    <div id="pharmacyList">
+        <p class="empty-message">위 검색 조건으로 약국 정보를 조회해 보세요.</p>
+    </div>
 
+    <script>
+        // TODO: **** 여기에 당신의 Cloud Functions 호출 URL을 붙여넣으세요! ****
+        // 예시: 'https://getpharmacydata-o5res3extq-du.a.run.app'
+        const API_ENDPOINT = 'https://getpharmacydata-o5res3extq-du.a.run.app/'; 
 
-sdfsdfsdfsdffds
+        async function getPharmacies() {
+            const sido = document.getElementById('sido').value.trim();
+            const sigungu = document.getElementById('sigungu').value.trim();
+            const day = document.getElementById('day').value;
+            const pharmacyListDiv = document.getElementById('pharmacyList');
+
+            // API_ENDPOINT가 설정되지 않았을 경우 경고
+            if (API_ENDPOINT === 'YOUR_CLOUD_FUNCTIONS_URL_HERE' || !API_ENDPOINT.startsWith('http')) {
+                pharmacyListDiv.innerHTML = '<p class="error-message">🚨 API_ENDPOINT를 자신의 Cloud Functions URL로 변경해 주세요!</p>';
+                return;
+            }
+
+            pharmacyListDiv.innerHTML = '<p class="empty-message">데이터를 불러오는 중...</p>';
+
+            try {
+                const url = new URL(API_ENDPOINT);
+                url.searchParams.append('Q0', sido);
+                url.searchParams.append('Q1', sigungu);
+                url.searchParams.append('DG', day);
+
+                const response = await fetch(url.toString());
+                const data = await response.json();
+
+                if (response.ok) { // HTTP 상태 코드가 2xx (성공)인 경우
+                    if (data && data.length > 0) {
+                        pharmacyListDiv.innerHTML = data.map(pharmacy => `
+                            <div class="pharmacy-item">
+                                <h3>${pharmacy.dutyName || '이름 정보 없음'}</h3>
+                                <p><strong>주소:</strong> ${pharmacy.dutyAddr || '주소 정보 없음'}</p>
+                                <p><strong>전화번호:</strong> ${pharmacy.dutyTel1 || '전화번호 정보 없음'}</p>
+                                <p><strong>운영시간:</strong> ${getOperatingHours(pharmacy, day) || '운영시간 정보 없음'}</p>
+                                ${pharmacy.hospUrl ? `<p><a href="${pharmacy.hospUrl}" target="_blank" rel="noopener noreferrer">홈페이지 방문</a></p>` : ''}
+                            </div>
+                        `).join('');
+                    } else {
+                        pharmacyListDiv.innerHTML = '<p class="empty-message">해당 조건에 맞는 약국 정보가 없습니다.</p>';
+                    }
+                } else { // HTTP 상태 코드가 2xx가 아닌 경우 (예: 4xx, 5xx)
+                    pharmacyListDiv.innerHTML = `<p class="error-message">⚠️ 오류 발생: ${data.message || '알 수 없는 오류'}<br>자세한 내용은 콘솔(F12)을 확인하세요.</p>`;
+                    console.error('API 응답 오류:', data);
+                }
+            } catch (error) {
+                console.error('데이터 조회 중 오류 발생:', error);
+                pharmacyListDiv.innerHTML = '<p class="error-message">❌ 데이터를 불러오는 중 네트워크 오류가 발생했습니다. 인터넷 연결을 확인하거나 잠시 후 다시 시도해주세요.</p>';
+            }
+        }
+
+        // 약국 운영시간을 요일별로 가져오는 헬퍼 함수
+        // NOTE: 공공데이터포털 API 문서에서 '운영시간' 관련 필드를 정확히 확인하여 매핑해야 합니다.
+        // 현재는 dutyMonC, dutyTueC 등 각 요일별 종료 시간 필드가 있을 수 있다는 가정 하에 예시를 작성했습니다.
+        // 실제 API 응답 필드명과 일치시키세요.
+        function getOperatingHours(pharmacy, day) {
+            // API 응답 필드명에 따라 정확하게 수정 필요! (아래는 일반적인 예시)
+            const hourMap = {
+                '월': pharmacy.dutyMonC,
+                '화': pharmacy.dutyTueC,
+                '수': pharmacy.dutyWedC,
+                '목': pharmacy.dutyThuC,
+                '금': pharmacy.dutyFriC,
+                '토': pharmacy.dutySatC,
+                '일': pharmacy.dutySunC,
+                '공휴일': pharmacy.dutyHolidayC || pharmacy.dutyHoliC // 공휴일 필드명이 다를 수 있음
+            };
+
+            const openTime = pharmacy.dutyTime1c || '알 수 없음'; // 일반적인 시작 시간 필드
+            const closeTime = hourMap[day] || '알 수 없음'; // 요일별 종료 시간 필드
+
+            if (openTime === '알 수 없음' && closeTime === '알 수 없음') {
+                return '운영시간 정보 없음';
+            }
+            return `${openTime} ~ ${closeTime}`;
+        }
+
+        // 페이지 로드 시 초기 데이터 로드 (선택 사항)
+        // getPharmacies();
+    </script>
 </body>
+</html>
