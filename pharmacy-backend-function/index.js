@@ -47,13 +47,13 @@ functions.http('getPharmacyData', async (req, res) => {
     DG = dayMap[DG] || DG; // dayMap에 없으면 원본 값 그대로 사용 (에러 방지)
 
     // 공공데이터포털 API URL 구성
-    const apiUrl = `http://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyList?ServiceKey=${serviceKey}&Q0=${Q0}&Q1=${Q1}&DG=${DG}&pageNo=1&numOfRows=10`;
+    const apiUrl = `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyList?ServiceKey=${serviceKey}&Q0=${Q0}&Q1=${Q1}&DG=${DG}&pageNo=1&numOfRows=10`;
 
     try {
       // --- 디버깅을 위한 로그 추가 ---
       console.log("Original DG from request:", originalDG); // 원본 DG 값 로그
       console.log("Converted DG for API call:", DG);       // 변환된 DG 값 로그
-      console.log("Constructed API URL (without key):", `http://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyList?ServiceKey=***&Q0=${Q0}&Q1=${Q1}&DG=${DG}&pageNo=1&numOfRows=10`);
+      console.log("Constructed API URL (without key):", `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyList?ServiceKey=***&Q0=${Q0}&Q1=${Q1}&DG=${DG}&pageNo=1&numOfRows=10`);
       console.log("API Key length:", serviceKey ? serviceKey.length : "undefined");
       console.log("Q0 (sido):", Q0);
       console.log("Q1 (sigungu):", Q1);
