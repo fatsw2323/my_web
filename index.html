@@ -171,7 +171,13 @@
     <script>
         // TODO: **** 여기에 당신의 Cloud Functions 호출 URL을 붙여넣으세요! ****
         // 예시: 'https://getpharmacydata-o5res3extq-du.a.run.app'
-        const API_ENDPOINT = 'https://getpharmacydata-o5res3extq-du.a.run.app/'; 
+        //const API_ENDPOINT = 'https://getpharmacydata-o5res3extq-du.a.run.app/'; 
+
+        // TODO: **** 여기에 당신의 Cloud Functions 호출 URL을 붙여넣으세요! ****
+        // 예시: 'https://getpharmacydata-o5res3extq-du.a.run.app' // 이건 Cloud Run URL (이전 예시)
+        const API_ENDPOINT = 'https://asia-northeast3-dulcet-pilot-465406-k3.cloudfunctions.net/getPharmacyData'; // 이 주소를 사용하세요!
+
+
 
         async function getPharmacies() {
             const sido = document.getElementById('sido').value.trim();
