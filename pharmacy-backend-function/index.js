@@ -47,7 +47,8 @@ functions.http('getPharmacyData', async (req, res) => {
     DG = dayMap[DG] || DG; // dayMap에 없으면 원본 값 그대로 사용 (에러 방지)
 
     // 공공데이터포털 API URL 구성
-    const apiUrl = `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyList?ServiceKey=${serviceKey}&Q0=${Q0}&Q1=${Q1}&DG=${DG}&pageNo=1&numOfRows=10`;
+    const apiUrl = `https://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyListInfoInqire?ServiceKey=${serviceKey}&Q0=${Q0}&Q1=${Q1}&DG=${DG}&pageNo=1&numOfRows=10`;
+                    
 
     try {
       // --- 디버깅을 위한 로그 추가 ---
