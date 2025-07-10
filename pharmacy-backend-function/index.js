@@ -43,6 +43,21 @@ functions.http('getPharmacyData', async (req, res) => {
         const apiUrl = `${baseUrl}?${queryParams}`;
         console.log(`Calling API: ${apiUrl}`); // Cloud Functions 로그에서 확인할 수 있습니다.
 
+// ... (기존 코드) ...
+
+try {
+    const apiUrl = `http://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyList?ServiceKey=${process.env.PHARMACY_API_KEY}&Q0=${Q0}&Q1=${Q1}&DG=${DG}&pageNo=1&numOfRows=10`;
+
+    // --- 이 부분 추가 ---
+    console.log("Constructed API URL (without key):", `http://apis.data.go.kr/B552657/ErmctInsttInfoInqireService/getParmacyList?ServiceKey=***&Q0=${Q0}&Q1=${Q1}&DG=${DG}&pageNo=1&numOfRows=10`);
+    console.log("API Key length:", process.env.PHARMACY_API_KEY ? process.env.PHARMACY_API_KEY.length : "undefined");
+    // -------------------
+
+    const response = await axios.get(apiUrl);
+
+// ... (나머지 코드) ...
+
+
         try {
             // 4. 공공데이터포털 API 호출
             const response = await axios.get(apiUrl);
